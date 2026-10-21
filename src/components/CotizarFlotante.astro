@@ -1,0 +1,48 @@
+---
+// Acceso rápido al formulario de solicitud desde cualquier parte de la página.
+import Icono from './Icono.astro';
+---
+<a
+  href="#cotizar"
+  class="cotizar-flotante fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-40 inline-flex min-h-14 items-center gap-2 rounded-full bg-ambar py-3 pr-5 pl-4 text-[0.95rem] font-medium text-tinta sm:right-6 sm:bottom-6"
+  data-cotizar-flotante
+>
+  <Icono nombre="enviar" class="size-5" trazo={1.8} />
+  Cotizar
+</a>
+
+<style>
+  .cotizar-flotante {
+    box-shadow:
+      0 0 0 4px rgb(255 255 255 / 0.9),
+      0 14px 34px -10px rgb(0 0 0 / 0.45);
+    transition:
+      opacity 0.25s,
+      transform 0.35s var(--ease-suave),
+      background-color 0.2s;
+  }
+  .cotizar-flotante:hover {
+    background: var(--color-ambar-press);
+  }
+  .cotizar-flotante:active {
+    transform: scale(0.95);
+  }
+  /* Oculto mientras se ve el formulario o con un menú abierto */
+  .cotizar-flotante.oculto,
+  :global(html[data-bloqueo]) .cotizar-flotante {
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const boton = document.querySelector<HTMLElement>('[data-cotizar-flotante]')!;
+  const cotizador = document.querySelector('[data-cotizador]');
+  if (cotizador) {
+    new IntersectionObserver(([e]) => {
+      boton.classList.toggle('oculto', e.isIntersecting);
+      boton.toggleAttribute('inert', e.isIntersecting);
+    }).observe(cotizador);
+  }
+</script>

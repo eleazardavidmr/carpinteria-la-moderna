@@ -1,0 +1,501 @@
+---
+// Solicitud de cotización: todo se hace en la web y al taller le llega la solicitud completa.
+// Mientras negocio.solicitudesDemo sea true, el formulario muestra el flujo pero no envía datos.
+// TODO (fase 1): enviar a /api/solicitudes → Supabase (datos y fotos) → n8n (aviso, confirmación, recordatorio).
+import Icono from './Icono.astro';
+import { ARMARIO_PREFABRICADO, OTRO_MUEBLE, categorias } from '../data/categorias';
+import { negocio } from '../data/negocio';
+
+const pasos = ['Elija el mueble', 'Medidas y fotos', 'Sus datos', 'Enviar'];
+const medios = ['Llamada', 'WhatsApp', 'Correo'];
+---
+<section id="cotizar" class="contenedor pb-20 sm:pb-24 lg:pb-32" aria-labelledby="cotizar-titulo">
+  <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end lg:gap-16" data-reveal>
+    <div>
+      <p class="etiqueta">Solicitud de cotización</p>
+      <h2 id="cotizar-titulo" class="titulo-l mt-3 max-w-[15ch]">Cotice su mueble sin salir de la web</h2>
+    </div>
+    <p class="max-w-md text-[1rem] leading-relaxed text-gris lg:justify-self-end">
+      Cuéntenos qué necesita y envíe su solicitud aquí mismo. Le llega completa a nuestro equipo, que lo contacta para coordinar la visita técnica. La cotización no tiene costo.
+    </p>
+  </div>
+
+  <ol class="mt-8 flex flex-wrap gap-2" data-reveal style="--d:60ms">
+    {
+      pasos.map((p, i) => (
+        <li class="chip bg-niebla text-tinta">
+          <span class="grid size-5 place-items-center rounded-full bg-tinta text-[0.65rem] font-semibold text-papel">{i + 1}</span>
+          {p}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="mt-6" data-cotizador data-reveal style="--d:100ms">
+    <form class="rounded-[1.75rem] bg-niebla p-3 sm:p-6 lg:p-8" novalidate data-formulario>
+      <div class="grid gap-3 lg:grid-cols-[1.15fr_1fr] lg:gap-4">
+        <!-- Su mueble -->
+        <fieldset class="grid content-start gap-4 rounded-[1.35rem] bg-papel p-4 sm:p-6">
+          <legend class="float-left mb-1 text-[1.15rem] font-medium tracking-[-0.02em]">Su mueble</legend>
+
+          <div class="campo clear-left">
+            <label for="c-tipo">Tipo de mueble</label>
+            <div class="relative">
+              <select id="c-tipo" name="tipo" required>
+                <option value="" disabled selected>Elija una opción</option>
+                {categorias.map((c) => <option value={c.nombre}>{c.nombre}</option>)}
+                <option value={ARMARIO_PREFABRICADO}>{ARMARIO_PREFABRICADO}</option>
+                <option value={OTRO_MUEBLE}>{OTRO_MUEBLE}</option>
+              </select>
+              <Icono nombre="arriba-abajo" class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-gris" trazo={2} />
+            </div>
+            <p class="error">Elija el tipo de mueble.</p>
+          </div>
+
+          <div class="campo">
+            <label for="c-medidas">Medidas aproximadas <span class="opcional">(opcional)</span></label>
+            <input id="c-medidas" name="medidas" type="text" placeholder="Ej.: 2,40 m × 2,20 m" autocomplete="off" />
+          </div>
+
+          <div class="campo">
+            <span class="etiqueta-campo">Fotos de su espacio <span class="opcional">(opcional, hasta 5)</span></span>
+            <label for="c-fotos" class="zona-fotos" data-zona-fotos>
+              <span class="grid size-11 place-items-center rounded-full bg-papel text-madera shadow-flota">
+                <Icono nombre="camara" class="size-5" />
+              </span>
+              <span>
+                <span class="block font-medium">Agregar fotos</span>
+                <span class="block text-[0.8rem] text-gris" data-fotos-texto>Tome o elija fotos del lugar donde irá el mueble</span>
+              </span>
+            </label>
+            <input id="c-fotos" name="fotos" type="file" accept="image/*" multiple class="sr-only" />
+            <div class="hidden flex-wrap items-center gap-2" data-fotos-vista>
+              <div class="flex flex-wrap gap-2" data-fotos-miniaturas></div>
+              <button type="button" class="min-h-11 px-2 text-[0.85rem] font-medium text-madera-texto underline underline-offset-4" data-fotos-quitar>
+                Quitar fotos
+              </button>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="c-comentarios">Comentarios <span class="opcional">(opcional)</span></label>
+            <textarea id="c-comentarios" name="comentarios" rows="4" placeholder="Colores, materiales, para qué espacio es…"></textarea>
+          </div>
+        </fieldset>
+
+        <!-- Sus datos -->
+        <fieldset class="grid content-start gap-4 rounded-[1.35rem] bg-papel p-4 sm:p-6">
+          <legend class="float-left mb-1 text-[1.15rem] font-medium tracking-[-0.02em]">Sus datos</legend>
+
+          <div class="campo clear-left">
+            <label for="c-nombre">Nombre</label>
+            <input id="c-nombre" name="nombre" type="text" required placeholder="Su nombre" autocomplete="name" />
+            <p class="error">Escriba su nombre.</p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div class="campo">
+              <label for="c-celular">Celular</label>
+              <input id="c-celular" name="celular" type="tel" required inputmode="tel" placeholder="300 123 4567" autocomplete="tel-national" data-celular />
+              <p class="error">Escriba un celular de 10 dígitos.</p>
+            </div>
+            <div class="campo">
+              <label for="c-correo">Correo <span class="opcional">(opcional)</span></label>
+              <input id="c-correo" name="correo" type="email" placeholder="nombre@correo.com" autocomplete="email" data-correo />
+              <p class="error">Escriba un correo válido para contactarlo por correo.</p>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="c-barrio">Barrio o sector</label>
+            <input id="c-barrio" name="barrio" type="text" required placeholder="Ej.: Los Álamos" autocomplete="address-level3" />
+            <p class="error">Escriba su barrio o sector.</p>
+          </div>
+
+          <fieldset class="campo">
+            <legend class="etiqueta-campo mb-2">¿Cómo prefiere que lo contactemos?</legend>
+            <div class="flex flex-wrap gap-2">
+              {
+                medios.map((m, i) => (
+                  <label class="opcion">
+                    <input type="radio" name="medio" value={m} checked={i === 0} class="sr-only" />
+                    {m}
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <div class="campo">
+            <label class="autorizacion flex min-h-11 items-start gap-3 text-[0.85rem] leading-relaxed">
+              <input type="checkbox" name="autorizacion" required class="casilla mt-0.5" />
+              <span>
+                Autorizo a {negocio.nombre} a usar mis datos solo para responder esta solicitud.
+                <span class="block text-gris">Tratamos sus datos según la Ley 1581 de 2012.</span>
+              </span>
+            </label>
+            <p class="error">Necesitamos su autorización para contactarlo.</p>
+          </div>
+
+          <button type="submit" class="btn btn-oscuro min-h-14 w-full text-base">
+            <Icono nombre="enviar" class="size-5" />
+            Enviar solicitud
+          </button>
+          <p class="flex items-start gap-2 text-[0.8rem] leading-relaxed text-gris">
+            <span class="mt-1.5 size-2 shrink-0 rounded-full bg-ambar" aria-hidden="true"></span>
+            <span>Le llega directo a nuestro equipo. Respondemos en menos de 24 horas hábiles.</span>
+          </p>
+        </fieldset>
+      </div>
+    </form>
+
+    <!-- Confirmación -->
+    <div class="rounded-[1.75rem] bg-niebla p-3 sm:p-6 lg:p-8" hidden data-confirmacion>
+      <div class="grid gap-3 lg:grid-cols-[1.15fr_1fr] lg:gap-4">
+        <div class="rounded-[1.35rem] bg-papel p-5 sm:p-8">
+          <span class="grid size-14 place-items-center rounded-full bg-ambar">
+            <Icono nombre="check" class="size-7" trazo={2.2} />
+          </span>
+          <h3 class="titulo-m mt-5" tabindex="-1" data-confirmacion-titulo>¡Solicitud enviada!</h3>
+          <p class="mt-3 text-[1rem] leading-relaxed text-gris">
+            Número de solicitud <strong class="font-semibold text-tinta" data-c-numero></strong>. Lo contactaremos por{' '}
+            <span class="text-tinta" data-c-medio></span> para coordinar la visita técnica.
+          </p>
+
+          <dl class="mt-6 grid gap-x-6 gap-y-3 border-t border-niebla-2 pt-5 text-[0.9rem] sm:grid-cols-2">
+            <div><dt class="text-gris">Mueble</dt><dd class="font-medium" data-c-tipo></dd></div>
+            <div><dt class="text-gris">Medidas</dt><dd class="font-medium" data-c-medidas></dd></div>
+            <div><dt class="text-gris">Barrio o sector</dt><dd class="font-medium" data-c-barrio></dd></div>
+            <div><dt class="text-gris">Fotos</dt><dd class="font-medium" data-c-fotos></dd></div>
+            <div class="sm:col-span-2"><dt class="text-gris">Comentarios</dt><dd class="font-medium" data-c-comentarios></dd></div>
+          </dl>
+
+          <button type="button" class="btn btn-claro mt-7" data-nueva-solicitud>
+            Hacer otra solicitud
+          </button>
+        </div>
+
+        {
+          negocio.solicitudesDemo && (
+            <div class="rounded-[1.35rem] bg-tinta p-5 text-papel sm:p-8">
+              <p class="text-[0.8125rem] font-medium text-gris-claro">Así le llega a {negocio.nombre}</p>
+              <div class="mt-4 rounded-[1.1rem] bg-tinta-3 p-4" aria-hidden="true">
+                <div class="flex items-center gap-3">
+                  <span class="grid size-9 place-items-center rounded-xl bg-ambar text-tinta">
+                    <Icono nombre="taller" class="size-4" trazo={2} />
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[0.9rem] font-medium">Nueva solicitud · <span data-c-numero></span></p>
+                    <p class="text-[0.75rem] text-gris-claro">ahora</p>
+                  </div>
+                </div>
+                <p class="mt-3 text-[0.95rem]"><span data-c-tipo></span> · <span data-c-barrio></span></p>
+                <p class="mt-1 text-[0.85rem] text-papel/80"><span data-c-nombre></span> · <span data-c-celular></span> · prefiere <span data-c-medio-corto></span></p>
+                <p class="mt-1 text-[0.85rem] text-papel/80" data-c-fotos-aviso></p>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-[0.85rem] font-medium">
+                  <span class="grid min-h-10 place-items-center rounded-lg bg-papel text-tinta">Contactar</span>
+                  <span class="grid min-h-10 place-items-center rounded-lg bg-papel/10">Ver en el panel</span>
+                </div>
+              </div>
+              <ul class="mt-5 space-y-2 text-[0.85rem] text-papel/80">
+                <li class="flex gap-2"><Icono nombre="check" class="mt-0.5 size-4 shrink-0 text-ambar" trazo={2} />Queda guardada en el panel con estado "nueva"</li>
+                <li class="flex gap-2"><Icono nombre="check" class="mt-0.5 size-4 shrink-0 text-ambar" trazo={2} />El cliente recibe una confirmación con el resumen</li>
+                <li class="flex gap-2"><Icono nombre="check" class="mt-0.5 size-4 shrink-0 text-ambar" trazo={2} />Recordatorio si nadie la atiende a tiempo</li>
+              </ul>
+              <p class="mt-6 border-t border-papel/15 pt-4 text-[0.75rem] leading-relaxed text-gris-claro">
+                Vista de demostración: todavía no se envió ningún dato. En la versión final, la solicitud se guarda y este aviso llega al instante.
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .campo {
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+    min-width: 0;
+  }
+  .campo label:not(.opcion, .zona-fotos, .autorizacion),
+  .etiqueta-campo {
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .opcional {
+    font-weight: 400;
+    color: var(--color-gris);
+  }
+  .campo :is(input:not([type='radio'], [type='checkbox'], [type='file']), select, textarea) {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.9rem;
+    background: var(--color-niebla);
+    color: var(--color-tinta);
+    /* 16 px como mínimo para que iOS no haga zoom al escribir */
+    font-size: 1rem;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .campo select {
+    appearance: none;
+    padding-right: 2.75rem;
+  }
+  .campo select:has(option[value='']:checked) {
+    color: var(--color-gris);
+  }
+  .campo textarea {
+    resize: vertical;
+    min-height: 7rem;
+  }
+  .campo ::placeholder {
+    color: #858581;
+  }
+  .campo :is(input, select, textarea):hover {
+    background: var(--color-niebla-2);
+  }
+  .campo :is(input, select, textarea):focus-visible {
+    outline: none;
+    background: var(--color-papel);
+    border-color: var(--color-tinta);
+    box-shadow: 0 0 0 3px rgb(233 179 90 / 0.45);
+  }
+
+  .zona-fotos {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 4.5rem;
+    padding: 0.85rem 1rem;
+    border: 1.5px dashed var(--color-niebla-2);
+    border-radius: 0.9rem;
+    background: var(--color-niebla);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
+  }
+  .zona-fotos:hover,
+  .campo:has(input[type='file']:focus-visible) .zona-fotos {
+    border-color: var(--color-madera);
+    background: var(--color-ambar-suave);
+  }
+
+  .opcion {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1.1rem;
+    border-radius: 999px;
+    background: var(--color-niebla);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .opcion:has(input:checked) {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+  .opcion:has(input:focus-visible) {
+    outline: 2px solid var(--color-ambar);
+    outline-offset: 2px;
+  }
+
+  .casilla {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    accent-color: var(--color-tinta);
+  }
+
+  .error {
+    display: none;
+    font-size: 0.82rem;
+    color: #b3261e;
+  }
+  .campo.invalido :is(input, select) {
+    border-color: #b3261e;
+    background: #fdf1f0;
+  }
+  .campo.invalido .error {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    [data-confirmacion]:not([hidden]) {
+      animation: entrar 0.5s var(--ease-suave);
+    }
+  }
+  @keyframes entrar {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+</style>
+
+<script>
+  import { negocio } from '../data/negocio';
+
+  const MAX_FOTOS = 5;
+  const raiz = document.querySelector<HTMLElement>('[data-cotizador]')!;
+  const form = raiz.querySelector<HTMLFormElement>('[data-formulario]')!;
+  const confirmacion = raiz.querySelector<HTMLElement>('[data-confirmacion]')!;
+  const tipo = form.querySelector<HTMLSelectElement>('#c-tipo')!;
+  const celular = form.querySelector<HTMLInputElement>('[data-celular]')!;
+  const correo = form.querySelector<HTMLInputElement>('[data-correo]')!;
+  const inputFotos = form.querySelector<HTMLInputElement>('#c-fotos')!;
+  const vistaFotos = form.querySelector<HTMLElement>('[data-fotos-vista]')!;
+  const miniaturas = form.querySelector<HTMLElement>('[data-fotos-miniaturas]')!;
+  const textoFotos = form.querySelector<HTMLElement>('[data-fotos-texto]')!;
+  const textoFotosInicial = textoFotos.textContent;
+
+  let fotos: File[] = [];
+  let urls: string[] = [];
+
+  // Las tarjetas de "Qué hacemos" llegan aquí con el mueble ya elegido
+  document.addEventListener('click', (e) => {
+    const enlace = (e.target as HTMLElement).closest<HTMLElement>('[data-tipo]');
+    if (!enlace) return;
+    tipo.value = enlace.dataset.tipo!;
+    marcar(tipo, true);
+  });
+
+  // ---------- Fotos ----------
+  function pintarFotos() {
+    urls.forEach((u) => URL.revokeObjectURL(u));
+    urls = fotos.map((f) => URL.createObjectURL(f));
+    miniaturas.replaceChildren(
+      ...urls.map((u) => {
+        const img = document.createElement('img');
+        img.src = u;
+        img.alt = '';
+        img.className = 'size-16 rounded-xl object-cover';
+        return img;
+      }),
+    );
+    vistaFotos.classList.toggle('hidden', !fotos.length);
+    vistaFotos.classList.toggle('flex', !!fotos.length);
+    textoFotos.textContent = fotos.length
+      ? `${fotos.length} ${fotos.length === 1 ? 'foto agregada' : 'fotos agregadas'}`
+      : textoFotosInicial;
+  }
+  inputFotos.addEventListener('change', () => {
+    const nuevas = [...(inputFotos.files ?? [])].filter((f) => f.type.startsWith('image/'));
+    fotos = [...fotos, ...nuevas].slice(0, MAX_FOTOS);
+    inputFotos.value = '';
+    pintarFotos();
+  });
+  form.querySelector('[data-fotos-quitar]')!.addEventListener('click', () => {
+    fotos = [];
+    pintarFotos();
+  });
+
+  // ---------- Validación ----------
+  const soloDigitos = (v: string) => {
+    const d = v.replace(/\D/g, '');
+    return d.length === 12 && d.startsWith('57') ? d.slice(2) : d;
+  };
+  const medioElegido = () => new FormData(form).get('medio') as string;
+
+  function esValido(campo: HTMLInputElement | HTMLSelectElement): boolean {
+    if (campo === celular) return /^3\d{9}$/.test(soloDigitos(celular.value));
+    if (campo === correo) {
+      if (!correo.value.trim()) return medioElegido() !== 'Correo';
+      return correo.checkValidity();
+    }
+    if (campo instanceof HTMLInputElement && campo.type === 'checkbox') return campo.checked;
+    return campo.value.trim() !== '';
+  }
+
+  function marcar(campo: HTMLInputElement | HTMLSelectElement, ok: boolean) {
+    const contenedor = campo.closest('.campo')!;
+    contenedor.classList.toggle('invalido', !ok);
+    campo.setAttribute('aria-invalid', String(!ok));
+    const error = contenedor.querySelector<HTMLElement>('.error');
+    if (error) {
+      error.id ||= `${campo.id || campo.name}-error`;
+      campo.setAttribute('aria-describedby', error.id);
+    }
+  }
+
+  const aValidar = () => [
+    ...form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[required]'),
+    correo,
+  ];
+
+  function validar() {
+    let primero: HTMLElement | null = null;
+    for (const campo of aValidar()) {
+      const ok = esValido(campo);
+      marcar(campo, ok);
+      if (!ok && !primero) primero = campo;
+    }
+    primero?.focus();
+    return !primero;
+  }
+
+  // Quitar el error en cuanto se corrige
+  form.addEventListener('input', (e) => {
+    const campo = e.target as HTMLInputElement;
+    if (campo.closest('.campo.invalido') && esValido(campo)) marcar(campo, true);
+    if (campo.name === 'medio' && correo.closest('.campo.invalido') && esValido(correo)) marcar(correo, true);
+  });
+
+  // ---------- Envío ----------
+  const poner = (selector: string, texto: string) =>
+    confirmacion.querySelectorAll<HTMLElement>(selector).forEach((el) => (el.textContent = texto));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validar()) return;
+    const d = new FormData(form);
+    const valor = (k: string) => String(d.get(k) ?? '').trim();
+    const numero = `TN-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    const cel = soloDigitos(valor('celular')).replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+    const medio = valor('medio');
+    const medioTexto = medio === 'WhatsApp' ? medio : medio.toLowerCase();
+
+    if (!negocio.solicitudesDemo) {
+      // TODO (fase 1): enviar d + fotos a /api/solicitudes y mostrar la confirmación con el número real.
+    }
+
+    poner('[data-c-numero]', numero);
+    poner('[data-c-medio]', medio === 'Correo' ? `correo (${valor('correo')})` : `${medioTexto} al ${cel}`);
+    poner('[data-c-medio-corto]', medioTexto);
+    poner('[data-c-tipo]', valor('tipo'));
+    poner('[data-c-medidas]', valor('medidas') || 'Por definir en la visita');
+    poner('[data-c-barrio]', valor('barrio'));
+    poner('[data-c-fotos]', fotos.length ? `${fotos.length} adjunta${fotos.length === 1 ? '' : 's'}` : 'Sin fotos');
+    poner('[data-c-fotos-aviso]', fotos.length ? `${fotos.length} ${fotos.length === 1 ? 'foto adjunta' : 'fotos adjuntas'}` : 'Sin fotos');
+    poner('[data-c-comentarios]', valor('comentarios') || '—');
+    poner('[data-c-nombre]', valor('nombre'));
+    poner('[data-c-celular]', cel);
+
+    form.hidden = true;
+    confirmacion.hidden = false;
+    confirmacion.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    confirmacion.querySelector<HTMLElement>('[data-confirmacion-titulo]')!.focus({ preventScroll: true });
+  });
+
+  confirmacion.querySelector('[data-nueva-solicitud]')!.addEventListener('click', () => {
+    form.reset();
+    fotos = [];
+    pintarFotos();
+    form.querySelectorAll('.campo.invalido').forEach((c) => c.classList.remove('invalido'));
+    confirmacion.hidden = true;
+    form.hidden = false;
+    tipo.focus();
+  });
+</script>

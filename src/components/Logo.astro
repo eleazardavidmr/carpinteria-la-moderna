@@ -1,0 +1,81 @@
+---
+// Logo de Taller Nogal (marca ficticia de la demo).
+// Si existe public/images/logo.png (el logo real, negro sobre blanco) se usa ese archivo:
+// sobre fondos oscuros se invierte con CSS. Si no existe, se dibuja la versión provisional en SVG.
+import fs from 'node:fs';
+import path from 'node:path';
+import sharp from 'sharp';
+import { negocio } from '../data/negocio';
+import { caminoFormon, caminoSierra } from '../lib/sierra.js';
+
+interface Props {
+  variante?: 'horizontal' | 'apilado';
+  /** claro = logo blanco para fondos oscuros */
+  tono?: 'claro' | 'oscuro';
+  class?: string;
+}
+const { variante = 'horizontal', tono = 'oscuro', class: clase } = Astro.props;
+
+const etiqueta = `${negocio.nombre} · ${negocio.eslogan}`;
+const rutaPng = path.join(process.cwd(), 'public/images/logo.png');
+const png = fs.existsSync(rutaPng) ? await sharp(rutaPng).metadata() : null;
+const sierra = caminoSierra();
+---
+{
+  png ? (
+    <img
+      src="/images/logo.png"
+      width={png.width}
+      height={png.height}
+      alt={etiqueta}
+      class:list={['logo-png', tono === 'claro' ? 'logo-png-claro' : 'logo-png-oscuro', clase]}
+      decoding="async"
+    />
+  ) : variante === 'horizontal' ? (
+    <svg class={clase} viewBox="0 0 208 48" role="img" aria-label={etiqueta}>
+      <path d={sierra} transform="scale(.48)" fill="currentColor" fill-rule="evenodd" />
+      <g fill="currentColor" font-family="'Montserrat Variable', Montserrat, sans-serif">
+        <text x="58" y="18" font-size="10" font-weight="700" textLength="148" lengthAdjust="spacing">
+          EBANISTERÍA
+        </text>{' '}
+        <text x="57" y="40" font-size="18" font-weight="800" textLength="149" lengthAdjust="spacing">
+          TALLER NOGAL
+        </text>
+      </g>
+    </svg>
+  ) : (
+    <svg class={clase} viewBox="0 0 240 194" role="img" aria-label={etiqueta}>
+      <path d={sierra} transform="translate(84 0) scale(.72)" fill="currentColor" fill-rule="evenodd" />
+      <g
+        fill="currentColor"
+        font-family="'Montserrat Variable', Montserrat, sans-serif"
+        text-anchor="middle"
+      >
+        <text x="120" y="100" font-size="13" font-weight="700" textLength="200" lengthAdjust="spacing">
+          EBANISTERÍA
+        </text>{' '}
+        <text x="120" y="132" font-size="26" font-weight="800" textLength="216" lengthAdjust="spacing">
+          TALLER NOGAL
+        </text>{' '}
+        <text x="120" y="188" font-size="10.5" font-weight="600" textLength="200" lengthAdjust="spacing">
+          OFICIO A LA MEDIDA
+        </text>
+      </g>
+      <path d={caminoFormon(216)} transform="translate(12 147)" fill="currentColor" />
+    </svg>
+  )
+}
+
+<style>
+  .logo-png {
+    width: auto;
+  }
+  /* Logo negro sobre blanco: en fondo claro el blanco desaparece; en fondo oscuro se invierte */
+  .logo-png-oscuro {
+    mix-blend-mode: multiply;
+  }
+  .logo-png-claro {
+    filter: invert(1);
+    mix-blend-mode: screen;
+  }
+</style>

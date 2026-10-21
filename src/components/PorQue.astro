@@ -1,0 +1,130 @@
+---
+// Tarjetas que se apilan al hacer scroll: texto + foto, con contador 01/03.
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icono from './Icono.astro';
+import bar from '../assets/images/cocina-cava.jpg';
+import bibliotecas from '../assets/images/closet-led.jpg';
+import centro from '../assets/images/centro-tv.jpg';
+import { negocio } from '../data/negocio';
+
+interface Punto {
+  titulo: string;
+  texto: string;
+  fondo: string;
+  foto: ImageMetadata;
+  alt: string;
+  encuadre: string;
+  chips: { texto: string; clase: string; pos: string }[];
+}
+
+const puntos: Punto[] = [
+  {
+    titulo: 'Pensado para su espacio',
+    texto: 'Tomamos las medidas en su casa, oficina o negocio y diseñamos a partir de ellas. Sin tamaños de catálogo.',
+    fondo: 'bg-ambar-suave',
+    foto: centro,
+    alt: 'Muro de televisor a la medida con paneles de roble y mueble bajo abierto',
+    encuadre: 'object-[50%_55%]',
+    chips: [
+      { texto: 'Paneles de roble', clase: 'chip-blanco', pos: 'top-4 left-4' },
+      { texto: 'Muro de televisor', clase: 'chip-oscuro', pos: 'bottom-4 left-4' },
+    ],
+  },
+  {
+    titulo: 'Entregamos en la fecha acordada',
+    texto: 'La puntualidad es lo que más repiten nuestros clientes al calificarnos.',
+    fondo: 'bg-niebla',
+    foto: bibliotecas,
+    alt: 'Vestier con repisas iluminadas con LED y bancas bajas',
+    encuadre: 'object-[40%_50%]',
+    chips: [
+      { texto: `★ ${negocio.calificacion} · ${negocio.resenas} reseñas`, clase: 'chip-acento', pos: 'top-4 left-4' },
+      { texto: 'Vestier', clase: 'chip-blanco', pos: 'bottom-4 left-4' },
+    ],
+  },
+  {
+    titulo: 'Terminados que duran',
+    texto: 'Cuidamos cada unión, canto y herraje para que el mueble se vea bien por años.',
+    fondo: 'bg-ambar-suave',
+    foto: bar,
+    alt: 'Detalle de cava vertical para vinos con luz LED junto a gabinetes grises',
+    encuadre: 'object-[20%_70%]',
+    chips: [
+      { texto: 'Cava con luz LED', clase: 'chip-blanco', pos: 'top-4 left-4' },
+      { texto: 'Gabinetes a techo', clase: 'chip-oscuro', pos: 'bottom-4 left-4' },
+    ],
+  },
+];
+const total = String(puntos.length).padStart(2, '0');
+---
+<section id="por-que" class="contenedor pb-20 sm:pb-24 lg:pb-32" aria-labelledby="porque-titulo">
+  <div class="mx-auto max-w-2xl text-center" data-reveal>
+    <p class="etiqueta">Por qué Taller Nogal</p>
+    <h2 id="porque-titulo" class="titulo-l mt-3">{negocio.aniosOficio} años de oficio, un mueble a la vez.</h2>
+    <p class="mx-auto mt-4 max-w-md text-[1rem] leading-relaxed text-gris">
+      Ebanistería en {negocio.ciudad}. Tres razones para confiarnos su espacio.
+    </p>
+  </div>
+
+  <ol class="mt-10 lg:mt-14">
+    {
+      puntos.map((p, i) => (
+        <li class="apilada sticky bg-papel pb-3 lg:pb-5" style={`--i:${i}`}>
+          <div class="grid gap-2 sm:gap-3 lg:grid-cols-2">
+            <div class={`flex min-h-[17rem] flex-col justify-between gap-8 rounded-[1.6rem] p-6 sm:min-h-[20rem] lg:min-h-[28rem] lg:p-10 ${p.fondo}`}>
+              <h3 class="titulo-m max-w-[14ch]">{p.titulo}</h3>
+              <div class="flex items-end gap-5">
+                <span class="flex shrink-0 gap-1" aria-hidden="true">
+                  <span class="contador">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="contador contador-suave">{total}</span>
+                </span>
+                <div class="max-w-xs text-[0.95rem] leading-relaxed">
+                  <p>{p.texto}</p>
+                  {i === 2 && (
+                    <p class="mt-2 text-[0.85rem] text-gris">
+                      Trabajamos melamina, MDF y madera maciza con herrajes de cierre lento.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div class="relative aspect-[16/11] overflow-hidden rounded-[1.6rem] bg-niebla lg:aspect-auto">
+              <Picture
+                src={p.foto}
+                formats={['avif', 'webp']}
+                widths={[480, p.foto.width].filter((w, j, a) => w <= p.foto.width && a.indexOf(w) === j)}
+                sizes="(min-width: 1024px) 34rem, 100vw"
+                alt={p.alt}
+                class={`h-full w-full object-cover ${p.encuadre}`}
+                pictureAttributes={{ class: 'block h-full w-full' }}
+              />
+              {p.chips.map((c) => (
+                <span class={`chip absolute ${c.clase} ${c.pos}`} aria-hidden="true">
+                  {c.texto}
+                </span>
+              ))}
+              {i === 0 && (
+                <span class="absolute right-4 bottom-4 grid size-11 place-items-center rounded-full bg-ambar shadow-flota" aria-hidden="true">
+                  <Icono nombre="escuadra" class="size-5" />
+                </span>
+              )}
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  /* Cada tarjeta se pega un poco más abajo que la anterior: se ven apiladas */
+  .apilada {
+    top: calc(var(--header-h) + 0.75rem + var(--i) * 0.75rem);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .apilada {
+      position: static;
+    }
+  }
+</style>

@@ -1,0 +1,100 @@
+---
+import { Picture } from 'astro:assets';
+import Icono from './Icono.astro';
+import foto from '../assets/images/closet-led.jpg';
+import { negocio } from '../data/negocio';
+
+const pasos: { titulo: string; texto: string; nota?: string }[] = [
+  {
+    titulo: 'Envíe su solicitud desde la web',
+    texto: 'Escoja el mueble, indique las medidas y adjunte fotos del lugar. Su solicitud llega a nuestro equipo y cotizar es gratis.',
+  },
+  {
+    titulo: 'Visita técnica y medidas',
+    texto: 'Le escribimos para acordar la visita a su casa, oficina o negocio y medimos el espacio con precisión.',
+    nota: 'Visita sin costo en toda la ciudad.',
+  },
+  {
+    titulo: 'Diseño y cotización',
+    texto: 'Le mostramos el diseño, los materiales y el precio final antes de cortar la primera pieza.',
+  },
+  {
+    titulo: 'Fabricación en taller',
+    texto: `Construimos cada pieza en nuestro taller del ${negocio.sector}.`,
+    nota: 'Tiempo de fabricación: de 15 a 25 días hábiles.',
+  },
+  {
+    titulo: 'Instalación',
+    texto: 'Transportamos el mueble listo y lo dejamos instalado y nivelado.',
+  },
+];
+---
+<section id="proceso" class="marco bg-tinta text-papel" aria-labelledby="proceso-titulo">
+  <div class="contenedor py-16 sm:py-20 lg:py-28">
+    <div class="mx-auto max-w-2xl text-center" data-reveal>
+      <h2 id="proceso-titulo" class="titulo-l">¿Cómo trabajamos?</h2>
+      <p class="mt-4 text-[1.05rem] text-papel/80">De su idea a la instalación, en cinco pasos.</p>
+    </div>
+
+    <div class="mt-12 grid gap-8 lg:mt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+      <div class="relative lg:sticky lg:top-[calc(var(--header-h)+1.5rem)] lg:self-start" data-reveal>
+        <div class="relative aspect-[4/3] overflow-hidden rounded-[1.6rem] lg:aspect-[4/5]">
+          <Picture
+            src={foto}
+            formats={['avif', 'webp']}
+            widths={[480, foto.width]}
+            sizes="(min-width: 1024px) 30rem, 100vw"
+            alt="Vestier de madera clara con luz LED fabricado e instalado por el taller"
+            class="h-full w-full object-cover object-[35%_50%]"
+            pictureAttributes={{ class: 'block h-full w-full' }}
+          />
+          <span class="chip chip-acento absolute bottom-4 left-4" aria-hidden="true">
+            Fabricación en taller
+            <span class="chip-icono"><Icono nombre="taller" class="size-3.5" trazo={2} /></span>
+          </span>
+        </div>
+      </div>
+
+      <ol class="grid gap-3">
+        {
+          pasos.map((p, i) => (
+            <li
+              class:list={[
+                'paso rounded-[1.35rem] p-5 shadow-flota sm:p-6',
+                i === 0 ? 'bg-ambar text-tinta' : 'bg-papel text-tinta',
+              ]}
+              style={`--r:${i % 2 ? '0.8deg' : '-0.8deg'}`}
+              data-reveal
+            >
+              <div class="flex items-start gap-4">
+                <span class="contador mt-0.5 shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-[1.2rem] leading-snug tracking-[-0.025em] sm:text-[1.3rem]">{p.titulo}</h3>
+                  <p class:list={['mt-2 text-[0.95rem] leading-relaxed', i === 0 ? 'text-tinta/80' : 'text-gris']}>{p.texto}</p>
+                  {i === 0 && (
+                    <a href="#cotizar" class="mt-4 flex min-h-11 items-center gap-2 border-t border-tinta/15 pt-3 text-[0.9rem] font-medium">
+                      Solicitar cotización
+                      <Icono nombre="flecha" class="size-4" trazo={1.8} />
+                    </a>
+                  )}
+                  {p.nota && <p class="mt-4 border-t border-niebla-2 pt-3 text-[0.85rem] text-gris">{p.nota}</p>}
+                </div>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Tarjetas levemente giradas, como notas sobre la mesa de trabajo */
+  .paso {
+    rotate: var(--r);
+    transition: rotate 0.4s var(--ease-suave);
+  }
+  .paso:hover {
+    rotate: 0deg;
+  }
+</style>

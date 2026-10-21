@@ -1,0 +1,379 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Icono from './Icono.astro';
+import { categoriasPortafolio, portafolio } from '../data/portafolio';
+import { negocio } from '../data/negocio';
+import { imagen } from '../lib/imagenes';
+
+const trabajos = await Promise.all(
+  portafolio.map(async (t) => {
+    const img = imagen(t.src);
+    const cats = Array.isArray(t.categoria) ? t.categoria : [t.categoria];
+    const grande = await getImage({ src: img, width: img.width, format: 'webp' });
+    return { ...t, img, cats, grande };
+  }),
+);
+
+// Solo las categorías que tienen al menos una foto, en el orden de categoriasPortafolio
+const filtros = categoriasPortafolio.filter((c) => trabajos.some((t) => t.cats.includes(c)));
+---
+<section id="trabajos" class="contenedor pb-20 sm:pb-24 lg:pb-32" aria-labelledby="trabajos-titulo">
+  <div class="mx-auto max-w-2xl text-center" data-reveal>
+    <p class="etiqueta">Trabajos</p>
+    <h2 id="trabajos-titulo" class="titulo-l mt-3">Hechos en nuestro taller</h2>
+    <p class="mx-auto mt-4 max-w-md text-[1rem] leading-relaxed text-gris">
+      Una muestra de lo que hacemos. Toque una foto para verla en grande.
+    </p>
+  </div>
+
+  <div class="filtros -mx-4 mt-9 overflow-x-auto px-4 sm:mx-0 sm:px-0" data-reveal style="--d:60ms">
+    <div class="mx-auto flex w-max gap-2" role="group" aria-label="Filtrar trabajos por tipo de mueble">
+      <button type="button" class="filtro" aria-pressed="true" data-filtro="">Todos</button>
+      {
+        filtros.map((f) => (
+          <button type="button" class="filtro" aria-pressed="false" data-filtro={f}>
+            {f}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <ul class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-galeria>
+    {
+      trabajos.map((t, i) => (
+        <li class="item" data-cats={t.cats.join('|')} data-reveal style={`--d:${i * 70}ms`}>
+          <a
+            href={t.grande.src}
+            class="group relative block aspect-[4/5] overflow-hidden rounded-[1.6rem] bg-niebla"
+            data-lightbox
+            data-full={t.grande.src}
+            data-titulo={t.titulo}
+            data-alt={t.alt}
+            data-cat={t.cats.join(' · ')}
+            aria-label={`Ver en grande: ${t.titulo}`}
+          >
+            <Picture
+              src={t.img}
+              formats={['avif', 'webp']}
+              widths={[400, 640, t.img.width].filter((w, j, a) => w <= t.img.width && a.indexOf(w) === j)}
+              sizes="(min-width: 1024px) 23rem, (min-width: 640px) 50vw, 100vw"
+              alt={t.alt}
+              class="h-full w-full object-cover transition-transform duration-700 ease-(--ease-suave) group-hover:scale-[1.04]"
+              pictureAttributes={{ class: 'block h-full w-full' }}
+            />
+            <span class="chip chip-blanco absolute top-3 left-3 max-w-[calc(100%-4.5rem)]">
+              <span class="size-1.5 shrink-0 rounded-full bg-ambar" aria-hidden="true"></span>
+              <span class="truncate">{t.cats[0]}</span>
+            </span>
+            <span class="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-papel/90 shadow-flota transition-colors group-hover:bg-ambar">
+              <Icono nombre="expandir" class="size-4" trazo={1.8} />
+            </span>
+            <span class="tarjeta-flota absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 px-4 py-3">
+              <span>
+                <span class="block text-[1rem] leading-snug font-medium tracking-[-0.02em]">{t.titulo}</span>
+                {t.cats.length > 1 && <span class="mt-0.5 block text-[0.75rem] text-gris">{t.cats.slice(1).join(' · ')}</span>}
+              </span>
+              <span class="grid size-9 shrink-0 place-items-center rounded-full bg-tinta text-papel">
+                <Icono nombre="flecha-arriba-derecha" class="size-4" trazo={2} />
+              </span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="mt-3 flex flex-col gap-4 rounded-[1.6rem] bg-niebla p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6" data-reveal>
+    <p class="text-[1.1rem] leading-snug font-medium tracking-[-0.02em]">
+      Esto es solo una muestra.
+      <span class="block font-normal text-gris sm:inline"> Vea más trabajos en nuestras redes.</span>
+    </p>
+    <div class="grid grid-cols-2 gap-2 sm:flex">
+      <a href={negocio.instagram} target="_blank" rel="noopener" class="btn btn-claro">
+        <Icono nombre="instagram" class="size-5" />
+        Instagram
+      </a>
+      <a href={negocio.facebook} target="_blank" rel="noopener" class="btn btn-claro">
+        <Icono nombre="facebook" class="size-5" />
+        Facebook
+      </a>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <dialog class="lightbox" aria-label="Foto en grande" data-lightbox-dialog>
+    <div class="flex h-full flex-col">
+      <div class="flex items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
+        <p class="chip chip-blanco tabular-nums" data-lb-contador></p>
+        <button type="button" class="grid size-12 place-items-center rounded-full bg-papel text-tinta shadow-flota" aria-label="Cerrar" data-lb-cerrar>
+          <Icono nombre="cerrar" class="size-6" trazo={1.75} />
+        </button>
+      </div>
+      <div class="lb-escenario relative flex min-h-0 flex-1 items-center justify-center px-3 sm:px-20" data-lb-escenario>
+        <img class="lb-img max-h-full max-w-full rounded-[1.4rem] object-contain select-none" alt="" draggable="false" data-lb-img />
+        <button type="button" class="lb-flecha left-4 hidden sm:grid" aria-label="Foto anterior" data-lb-anterior>
+          <Icono nombre="izquierda" class="size-6" trazo={2} />
+        </button>
+        <button type="button" class="lb-flecha right-4 hidden sm:grid" aria-label="Foto siguiente" data-lb-siguiente>
+          <Icono nombre="derecha" class="size-6" trazo={2} />
+        </button>
+      </div>
+      <div class="px-4 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-center sm:px-6">
+        <p class="text-[0.75rem] font-medium text-ambar" data-lb-cat></p>
+        <p class="mt-1 text-[1.15rem] font-medium tracking-[-0.02em] text-papel" data-lb-titulo></p>
+        <p class="mt-2 text-xs text-papel/55 sm:hidden" data-lb-pista>Deslice para ver más</p>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<style>
+  .filtros {
+    scrollbar-width: none;
+  }
+  .filtros::-webkit-scrollbar {
+    display: none;
+  }
+  .filtro {
+    min-height: 2.75rem;
+    padding: 0 1.1rem;
+    border-radius: 999px;
+    background: var(--color-niebla);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--color-gris);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .filtro:hover {
+    color: var(--color-tinta);
+    background: var(--color-niebla-2);
+  }
+  .filtro[aria-pressed='true'] {
+    background: var(--color-tinta);
+    color: var(--color-papel);
+  }
+
+  .item[hidden] {
+    display: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .item.entra {
+      animation: aparecer 0.45s var(--ease-suave) both;
+    }
+  }
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  .lightbox {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-papel);
+    overscroll-behavior: contain;
+  }
+  .lightbox::backdrop {
+    background: rgb(12 12 12 / 0.94);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .lightbox[open] {
+      animation: aparecer 0.3s var(--ease-suave);
+    }
+  }
+  .lb-escenario {
+    touch-action: pan-y pinch-zoom;
+  }
+  .lb-img {
+    will-change: transform;
+  }
+  .lb-flecha {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--color-papel);
+    color: var(--color-tinta);
+    box-shadow: var(--shadow-flota);
+    transition: background-color 0.2s;
+  }
+  .lb-flecha:hover {
+    background: var(--color-ambar);
+  }
+</style>
+
+<script>
+  const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const raiz = document.documentElement;
+
+  // ---------- Filtros ----------
+  const botones = [...document.querySelectorAll<HTMLButtonElement>('[data-filtro]')];
+  const items = [...document.querySelectorAll<HTMLLIElement>('[data-galeria] .item')];
+
+  botones.forEach((b) =>
+    b.addEventListener('click', () => {
+      const filtro = b.dataset.filtro!;
+      botones.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      for (const it of items) {
+        const mostrar = !filtro || it.dataset.cats!.split('|').includes(filtro);
+        it.hidden = !mostrar;
+        it.classList.add('visible');
+        it.classList.remove('entra');
+        if (mostrar) {
+          void it.offsetWidth;
+          it.classList.add('entra');
+        }
+      }
+    }),
+  );
+
+  // ---------- Lightbox ----------
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox-dialog]')!;
+  const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+  const escenario = dialog.querySelector<HTMLElement>('[data-lb-escenario]')!;
+  const contador = dialog.querySelector<HTMLElement>('[data-lb-contador]')!;
+  const titulo = dialog.querySelector<HTMLElement>('[data-lb-titulo]')!;
+  const categoria = dialog.querySelector<HTMLElement>('[data-lb-cat]')!;
+  const pista = dialog.querySelector<HTMLElement>('[data-lb-pista]')!;
+  const anterior = dialog.querySelector<HTMLButtonElement>('[data-lb-anterior]')!;
+  const siguiente = dialog.querySelector<HTMLButtonElement>('[data-lb-siguiente]')!;
+  const enlaces = [...document.querySelectorAll<HTMLAnchorElement>('[data-lightbox]')];
+
+  let visibles: HTMLAnchorElement[] = [];
+  let actual = 0;
+  let origen: HTMLAnchorElement | null = null;
+
+  function mostrar(direccion: number) {
+    const e = visibles[actual];
+    img.src = e.dataset.full!;
+    img.alt = e.dataset.alt!;
+    titulo.textContent = e.dataset.titulo!;
+    categoria.textContent = e.dataset.cat!;
+    contador.textContent = `${actual + 1} / ${visibles.length}`;
+    const varias = visibles.length > 1;
+    anterior.style.visibility = siguiente.style.visibility = varias ? '' : 'hidden';
+    pista.hidden = !varias;
+    if (direccion && !reducir) {
+      img.animate(
+        [
+          { transform: `translateX(${direccion * 60}px)`, opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: 320, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+      );
+    }
+  }
+
+  function ir(delta: number) {
+    if (visibles.length < 2) return;
+    actual = (actual + delta + visibles.length) % visibles.length;
+    mostrar(delta);
+  }
+
+  enlaces.forEach((enlace) =>
+    enlace.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      visibles = enlaces.filter((e) => !e.closest<HTMLElement>('.item')!.hidden);
+      actual = visibles.indexOf(enlace);
+      origen = enlace;
+      mostrar(0);
+      dialog.showModal();
+      raiz.dataset.bloqueo = 'lightbox';
+      raiz.style.overflow = 'hidden';
+    }),
+  );
+
+  dialog.addEventListener('close', () => {
+    delete raiz.dataset.bloqueo;
+    raiz.style.overflow = '';
+    origen?.focus({ preventScroll: true });
+  });
+  dialog.querySelector('[data-lb-cerrar]')!.addEventListener('click', () => dialog.close());
+  anterior.addEventListener('click', () => ir(-1));
+  siguiente.addEventListener('click', () => ir(1));
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') ir(1);
+    if (e.key === 'ArrowLeft') ir(-1);
+  });
+
+  // Deslizar con el dedo: la foto sigue el dedo y cambia si se arrastra lo suficiente
+  let inicioX = 0;
+  let inicioY = 0;
+  let dx = 0;
+  let arrastrando = false;
+  let movio = false;
+
+  escenario.addEventListener('pointerdown', (e) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    arrastrando = true;
+    movio = false;
+    inicioX = e.clientX;
+    inicioY = e.clientY;
+    dx = 0;
+  });
+  escenario.addEventListener('pointermove', (e) => {
+    if (!arrastrando) return;
+    dx = e.clientX - inicioX;
+    if (!movio && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(e.clientY - inicioY)) {
+      movio = true;
+      escenario.setPointerCapture(e.pointerId);
+    }
+    if (movio && visibles.length > 1) {
+      img.style.transform = `translateX(${dx}px)`;
+      img.style.opacity = String(1 - Math.min(Math.abs(dx) / 500, 0.5));
+    }
+  });
+  const soltar = (e: PointerEvent) => {
+    if (!arrastrando) return;
+    arrastrando = false;
+    if (!movio) {
+      // Toque en el fondo (fuera de la foto) cierra
+      if (e.type === 'pointerup' && e.target === escenario) dialog.close();
+      return;
+    }
+    const umbral = Math.min(80, escenario.clientWidth * 0.18);
+    const cambia = Math.abs(dx) > umbral && visibles.length > 1;
+    const limpiar = () => {
+      img.style.transform = '';
+      img.style.opacity = '';
+    };
+    if (!cambia) {
+      if (reducir) return limpiar();
+      img
+        .animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: 220, easing: 'ease-out' })
+        .finished.then(limpiar);
+      return;
+    }
+    const dir = dx < 0 ? 1 : -1;
+    if (reducir) {
+      limpiar();
+      return ir(dir);
+    }
+    img
+      .animate([{ transform: `translateX(${dx}px)`, opacity: img.style.opacity }, { transform: `translateX(${-dir * 40}%)`, opacity: 0 }], {
+        duration: 160,
+        easing: 'ease-in',
+      })
+      .finished.then(() => {
+        limpiar();
+        ir(dir);
+      });
+  };
+  escenario.addEventListener('pointerup', soltar);
+  escenario.addEventListener('pointercancel', soltar);
+</script>

@@ -1,0 +1,29 @@
+---
+import { iconos, whatsappPath, type NombreIcono } from '../lib/iconos';
+
+interface Props {
+  nombre: NombreIcono | 'whatsapp';
+  class?: string;
+  trazo?: number;
+}
+const { nombre, class: clase = 'size-6', trazo = 1.5 } = Astro.props;
+---
+{
+  nombre === 'whatsapp' ? (
+    <svg class={clase} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d={whatsappPath} />
+    </svg>
+  ) : (
+    <svg
+      class={clase}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width={trazo}
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+      set:html={iconos[nombre]}
+    />
+  )
+}

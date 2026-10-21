@@ -1,0 +1,22 @@
+---
+// Testimonio de un cliente. No se usa en la demo.
+//
+// Uso (en Resenas.astro):
+// <Testimonio texto="…" autor="Nombre del cliente" fecha="hace 2 meses" />
+
+interface Props {
+  texto: string;
+  autor: string;
+  fecha?: string;
+  estrellas?: number;
+}
+const { texto, autor, fecha, estrellas = 5 } = Astro.props;
+---
+<figure class="flex h-full flex-col rounded-[1.35rem] bg-niebla p-6">
+  <p class="text-ambar" aria-label={`${estrellas} de 5 estrellas`}>{'★'.repeat(estrellas)}</p>
+  <blockquote class="mt-4 flex-1 leading-relaxed">“{texto}”</blockquote>
+  <figcaption class="mt-5 text-sm">
+    <span class="font-semibold">{autor}</span>
+    {fecha && <span class="text-gris"> · {fecha}</span>}
+  </figcaption>
+</figure>

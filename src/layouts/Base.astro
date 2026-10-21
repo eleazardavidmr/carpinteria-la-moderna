@@ -1,0 +1,84 @@
+---
+import '@fontsource-variable/montserrat';
+import '@fontsource-variable/inter/opsz.css';
+import '../styles/global.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2?url';
+import { negocio } from '../data/negocio';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'Taller Nogal | Ebanistería y muebles a medida – Cocinas, clósets y vestieres',
+  description = `Ebanistería con ${negocio.aniosOficio} años de oficio. Diseñamos cocinas integrales, clósets, muros de televisor y muebles a la medida de su espacio. Pida su cotización gratis desde la web.`,
+} = Astro.props;
+
+const url = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og.jpg', Astro.site);
+
+---
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {!negocio.indexar && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={url} />
+    <meta name="theme-color" content="#ffffff" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content={negocio.nombre} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${negocio.nombre} · ${negocio.eslogan}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body class="min-h-dvh overflow-x-clip">
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-xl focus:bg-ambar focus:px-4 focus:py-3 focus:font-medium focus:text-tinta"
+    >
+      Saltar al contenido
+    </a>
+    <slot />
+
+    <script>
+      // Aparición suave de los bloques marcados con data-reveal
+      const bloques = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entradas) => {
+            for (const e of entradas) {
+              if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        bloques.forEach((b) => io.observe(b));
+      } else {
+        bloques.forEach((b) => b.classList.add('visible'));
+      }
+    </script>
+  </body>
+</html>

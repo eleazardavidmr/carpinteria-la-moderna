@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import Cotizador from '../components/Cotizador.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Manifiesto from '../components/Manifiesto.astro';
+import PorQue from '../components/PorQue.astro';
+import Portafolio from '../components/Portafolio.astro';
+import Proceso from '../components/Proceso.astro';
+import Resenas from '../components/Resenas.astro';
+import Servicios from '../components/Servicios.astro';
+import Ubicacion from '../components/Ubicacion.astro';
+import CotizarFlotante from '../components/CotizarFlotante.astro';
+---
+<Base>
+  <Header />
+  <main id="contenido">
+    <Hero />
+    <Manifiesto />
+    <Servicios />
+    <Portafolio />
+    <PorQue />
+    <Proceso />
+    <Resenas />
+    <Cotizador />
+    <Ubicacion />
+  </main>
+  <Footer />
+  <CotizarFlotante />
+</Base>

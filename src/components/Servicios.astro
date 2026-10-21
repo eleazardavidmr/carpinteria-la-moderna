@@ -1,0 +1,63 @@
+---
+import Icono from './Icono.astro';
+import { ARMARIO_PREFABRICADO, OTRO_MUEBLE, categorias } from '../data/categorias';
+---
+<section id="servicios" class="contenedor pb-20 sm:pb-24 lg:pb-32" aria-labelledby="servicios-titulo">
+  <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-end lg:gap-16" data-reveal>
+    <div>
+      <p class="etiqueta">Qué hacemos</p>
+      <h2 id="servicios-titulo" class="titulo-l mt-3 max-w-[16ch]">Muebles a medida para su casa, oficina o local</h2>
+    </div>
+    <p class="max-w-md text-[1rem] leading-relaxed text-gris lg:justify-self-end">
+      Toque el mueble que necesita y arme su solicitud aquí mismo. La cotización no tiene costo.
+    </p>
+  </div>
+
+  <ul class="mt-10 grid grid-cols-2 gap-2 sm:gap-3 lg:mt-14 lg:grid-cols-5">
+    {
+      categorias.map((c, i) => (
+        <li data-reveal style={`--d:${(i % 5) * 50}ms`}>
+          <a
+            href="#cotizar"
+            data-tipo={c.nombre}
+            class="group flex h-full min-h-44 flex-col rounded-[1.35rem] bg-niebla p-3.5 transition-colors hover:bg-ambar-suave sm:min-h-48 sm:p-5"
+          >
+            <span class="grid size-11 place-items-center rounded-full bg-papel text-madera transition-transform duration-500 group-hover:-rotate-6">
+              <Icono nombre={c.icono} class="size-6" trazo={1.4} />
+            </span>
+            <span class="mt-5 text-[1rem] leading-snug font-medium tracking-[-0.02em] sm:text-[1.08rem]">{c.nombre}</span>
+            <span class="mt-auto flex items-center justify-between border-t border-niebla-2 pt-3 text-[0.8rem] font-medium text-madera-texto group-hover:border-tinta/10">
+              Cotizar
+              <Icono nombre="flecha" class="size-4 transition-transform group-hover:translate-x-1" trazo={1.8} />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+    <li data-reveal style="--d:200ms">
+      <a
+        href="#cotizar"
+        data-tipo={OTRO_MUEBLE}
+        class="group flex h-full min-h-44 flex-col rounded-[1.35rem] bg-tinta p-3.5 text-papel transition-colors hover:bg-tinta-3 sm:min-h-48 sm:p-5"
+      >
+        <span class="grid size-11 place-items-center rounded-full bg-ambar text-tinta">
+          <Icono nombre="mas" class="size-5" trazo={2} />
+        </span>
+        <span class="mt-5 text-[1rem] leading-snug font-medium tracking-[-0.02em] sm:text-[1.08rem]">¿Otro mueble?</span>
+        <span class="mt-auto flex items-center justify-between border-t border-papel/15 pt-3 text-[0.8rem] font-medium text-ambar">
+          Cuéntenos su idea
+          <Icono nombre="flecha" class="size-4 transition-transform group-hover:translate-x-1" trazo={1.8} />
+        </span>
+      </a>
+    </li>
+  </ul>
+
+  <a
+    href="#cotizar"
+    data-tipo={ARMARIO_PREFABRICADO}
+    class="mt-5 block py-3 text-[0.95rem] leading-relaxed text-gris transition-colors hover:text-tinta"
+    data-reveal
+  >
+    ¿Ya compró un armario prefabricado?&nbsp;<span class="font-medium text-tinta underline decoration-ambar decoration-2 underline-offset-4">También se lo armamos.</span>
+  </a>
+</section>

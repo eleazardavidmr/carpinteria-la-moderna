@@ -1,0 +1,193 @@
+---
+import Icono from './Icono.astro';
+import Logo from './Logo.astro';
+import { negocio } from '../data/negocio';
+
+const menu = [
+  { href: '#trabajos', texto: 'Trabajos' },
+  { href: '#proceso', texto: 'Proceso' },
+  { href: '#cotizar', texto: 'Cotizar' },
+  { href: '#contacto', texto: 'Contacto' },
+];
+---
+<header class="fixed inset-x-0 top-0 z-50 px-2 pt-2 lg:px-3 lg:pt-3" data-header>
+  <div class="barra relative mx-auto flex h-14 max-w-[76rem] items-center justify-between gap-2 rounded-[1.1rem] px-2.5 sm:h-16 sm:px-4 lg:px-5">
+    <a href="#inicio" class="flex min-h-11 shrink-0 items-center px-1" aria-label={`${negocio.nombre}, ir al inicio`}>
+      <Logo class="h-7 w-auto min-[380px]:h-[30px] sm:h-8" />
+    </a>
+
+    <nav aria-label="Principal" class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {
+          menu.map((item) => (
+            <li>
+              <a href={item.href} class="nav-link block rounded-lg px-3.5 py-2 text-[0.9rem] font-medium text-tinta/70 transition-colors hover:bg-niebla hover:text-tinta">
+                {item.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-1.5">
+      <a href="#cotizar" class="btn btn-oscuro min-h-10 gap-1.5 rounded-[0.65rem] px-3 text-[0.85rem]">
+        <Icono nombre="enviar" class="size-4" trazo={1.8} />
+        Cotizar
+      </a>
+      <button
+        type="button"
+        class="btn btn-claro min-h-10 gap-1 rounded-[0.65rem] px-3 text-[0.85rem] lg:hidden"
+        aria-expanded="false"
+        aria-controls="menu-movil"
+        data-menu-boton
+      >
+        <span data-menu-texto>Menú</span>
+        <Icono nombre="arriba-abajo" class="size-3.5" trazo={2} />
+      </button>
+    </div>
+
+    <!-- Menú desplegable en celular -->
+    <div id="menu-movil" class="menu-movil absolute inset-x-0 top-[calc(100%+0.5rem)] rounded-[1.5rem] bg-papel p-2 shadow-flota lg:hidden" data-menu>
+      <nav aria-label="Menú móvil">
+        <ul>
+          {
+            menu.map((item, i) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="flex min-h-14 items-center justify-between rounded-2xl px-4 text-[1.6rem] font-medium tracking-[-0.035em] transition-colors hover:bg-niebla"
+                  style={`--i:${i}`}
+                  data-menu-link
+                >
+                  {item.texto}
+                  <Icono nombre="flecha" class="size-5 text-gris" />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="mt-2 rounded-[1.1rem] bg-niebla p-3">
+          <a href="#cotizar" class="btn btn-oscuro w-full" data-menu-link>
+            <Icono nombre="enviar" class="size-5" trazo={1.8} />
+            Solicitar cotización
+          </a>
+          <p class="mt-3 flex items-center gap-2 px-1 text-[0.8rem] text-gris">
+            <Icono nombre="pin" class="size-4 shrink-0" />
+            {negocio.direccion}, {negocio.sector}, {negocio.ciudad}
+          </p>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="velo fixed inset-0 -z-10 bg-tinta/25 lg:hidden" data-velo aria-hidden="true"></div>
+</header>
+
+<style>
+  /* Píldora blanca flotante desde el inicio: se lee igual sobre el gris del hero y sobre la foto */
+  .barra {
+    background: rgb(255 255 255 / 0.82);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.05),
+      0 8px 24px -18px rgb(0 0 0 / 0.25);
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    backdrop-filter: blur(18px) saturate(170%);
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  [data-header].con-scroll .barra,
+  [data-header].abierto .barra {
+    background: rgb(255 255 255 / 0.9);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.06),
+      0 14px 34px -16px rgb(0 0 0 / 0.32);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .barra {
+      background: var(--color-papel);
+    }
+  }
+
+  .nav-link[aria-current='true'] {
+    background: var(--color-niebla);
+    color: var(--color-tinta);
+  }
+
+  .menu-movil,
+  .velo {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.25s,
+      transform 0.3s var(--ease-suave),
+      visibility 0s 0.3s;
+  }
+  .menu-movil {
+    transform: translateY(-0.5rem) scale(0.98);
+    transform-origin: top right;
+  }
+  [data-header].abierto :is(.menu-movil, .velo) {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.25s,
+      transform 0.35s var(--ease-suave);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-movil {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+  const boton = header.querySelector<HTMLButtonElement>('[data-menu-boton]')!;
+  const textoBoton = header.querySelector<HTMLElement>('[data-menu-texto]')!;
+  const raiz = document.documentElement;
+
+  // Barra blanca translúcida al bajar
+  const alScroll = () => header.classList.toggle('con-scroll', window.scrollY > 12);
+  alScroll();
+  window.addEventListener('scroll', alScroll, { passive: true });
+
+  // Menú desplegable
+  function abrirMenu(abrir: boolean) {
+    header.classList.toggle('abierto', abrir);
+    boton.setAttribute('aria-expanded', String(abrir));
+    textoBoton.textContent = abrir ? 'Cerrar' : 'Menú';
+    if (abrir) raiz.dataset.bloqueo = 'menu';
+    else if (raiz.dataset.bloqueo === 'menu') delete raiz.dataset.bloqueo;
+  }
+  boton.addEventListener('click', () => abrirMenu(!header.classList.contains('abierto')));
+  header.querySelector('[data-velo]')!.addEventListener('click', () => abrirMenu(false));
+  header.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => abrirMenu(false)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header.classList.contains('abierto')) {
+      abrirMenu(false);
+      boton.focus();
+    }
+  });
+  matchMedia('(min-width: 64rem)').addEventListener('change', (e) => e.matches && abrirMenu(false));
+
+  // Resaltar la sección visible en el menú de escritorio
+  const enlaces = [...header.querySelectorAll<HTMLAnchorElement>('.nav-link')];
+  const io = new IntersectionObserver(
+    (entradas) => {
+      for (const e of entradas) {
+        if (!e.isIntersecting) continue;
+        for (const a of enlaces) {
+          if (a.hash === `#${e.target.id}`) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        }
+      }
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  enlaces.forEach((a) => {
+    const s = document.querySelector(a.hash);
+    if (s) io.observe(s);
+  });
+</script>

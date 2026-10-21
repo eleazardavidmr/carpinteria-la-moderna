@@ -1,0 +1,31 @@
+---
+import Icono from './Icono.astro';
+import { negocio } from '../data/negocio';
+---
+<section id="resenas" class="contenedor py-20 sm:py-24 lg:py-32" aria-labelledby="resenas-titulo">
+  <div class="grid gap-8 rounded-[1.75rem] bg-ambar-suave p-6 sm:p-10 lg:grid-cols-[1fr_1fr] lg:items-end lg:p-14" data-reveal>
+    <div>
+      <p class="etiqueta text-madera-texto">Calificación de clientes</p>
+      <h2 id="resenas-titulo" class="sr-only">{negocio.calificacion} estrellas con {negocio.resenas} reseñas de clientes</h2>
+      <p class="mt-4 text-[clamp(6rem,4rem+10vw,10rem)] leading-[0.85] font-medium tracking-[-0.06em]" aria-hidden="true">
+        {negocio.calificacion}
+      </p>
+      <p class="mt-4 flex items-center gap-3" aria-hidden="true">
+        <span class="text-[1.6rem] leading-none tracking-[0.05em] text-madera">★★★★★</span>
+        <span class="chip chip-oscuro min-h-8">{negocio.resenas} reseñas</span>
+      </p>
+    </div>
+    <div class="lg:pb-2">
+      <p class="titulo-m max-w-[18ch]">Lo que más destacan: el acabado y la puntualidad.</p>
+      <p class="mt-4 max-w-sm text-[0.95rem] leading-relaxed text-gris">
+        Quienes nos califican resaltan lo bien terminado de cada mueble y que cumplimos las fechas pactadas.
+      </p>
+      <a href="#cotizar" class="btn btn-oscuro mt-7">
+        <Icono nombre="enviar" class="size-5" trazo={1.8} />
+        Solicitar cotización
+        <Icono nombre="flecha" class="size-4" trazo={1.8} />
+      </a>
+    </div>
+  </div>
+
+</section>

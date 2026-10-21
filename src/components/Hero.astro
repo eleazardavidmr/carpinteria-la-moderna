@@ -1,0 +1,149 @@
+---
+// Hero: tarjeta redondeada con el texto y la foto de la cocina con cava.
+// Si existe public/video/video.mp4 se reproduce sobre la foto (que queda como poster)
+// y se carga después de la página para no afectar la velocidad.
+import fs from 'node:fs';
+import path from 'node:path';
+import { Picture, getImage } from 'astro:assets';
+import Icono from './Icono.astro';
+import foto from '../assets/images/cocina-cava.jpg';
+import miniatura from '../assets/images/centro-tv.jpg';
+import { links, negocio } from '../data/negocio';
+
+const hayVideo = fs.existsSync(path.join(process.cwd(), 'public/video/video.mp4'));
+const poster = hayVideo ? await getImage({ src: foto, width: 640, format: 'webp' }) : null;
+---
+<section id="inicio" class="px-2 pt-2 lg:px-3 lg:pt-3">
+  <div class="relative overflow-hidden rounded-[1.75rem] bg-niebla lg:grid lg:min-h-[min(54rem,calc(100svh-1.5rem))] lg:grid-cols-[1.08fr_1fr] lg:rounded-[2.25rem]">
+    <div class="flex flex-col justify-center px-4 pt-24 pb-9 sm:px-8 sm:pt-28 lg:py-32 lg:pr-4 lg:pl-14">
+      <a
+        href={links.resenas}
+        class="hero-entrada chip chip-blanco min-h-10 w-fit"
+        style="--d:0ms"
+      >
+        <span class="text-ambar" aria-hidden="true">★★★★★</span>
+        {negocio.calificacion} · {negocio.resenas} reseñas de clientes
+      </a>
+
+      <h1 class="hero-entrada titulo-xl mt-6 max-w-[13ch]" style="--d:70ms">
+        Muebles hechos a su medida, con {negocio.aniosOficio} años de oficio
+      </h1>
+
+      <p class="hero-entrada mt-5 max-w-[36ch] text-[1.05rem] leading-relaxed text-gris" style="--d:140ms">
+        Cocinas, clósets y muros de televisor diseñados con las medidas reales de su casa.
+      </p>
+
+      <div class="hero-entrada mt-8 grid gap-2.5 min-[420px]:flex min-[420px]:flex-wrap" style="--d:210ms">
+        <a href="#cotizar" class="btn btn-oscuro">
+          <Icono nombre="enviar" class="size-5" trazo={1.8} />
+          Solicitar cotización
+        </a>
+        <a href="#trabajos" class="btn btn-claro">
+          Ver trabajos
+          <Icono nombre="flecha" class="size-4" />
+        </a>
+      </div>
+
+      <p class="hero-entrada etiqueta mt-8 flex items-center gap-2" style="--d:280ms">
+        <Icono nombre="pin" class="size-4" />
+        Ebanistería · {negocio.sector}, {negocio.ciudad}
+      </p>
+    </div>
+
+    <div class="relative mx-2 mb-2 aspect-[4/5] overflow-hidden rounded-[1.4rem] sm:aspect-[5/4] lg:m-3 lg:ml-0 lg:aspect-auto lg:rounded-[1.75rem]">
+      <Picture
+        src={foto}
+        formats={['avif', 'webp']}
+        widths={[420, 640]}
+        sizes="(min-width: 1024px) 46vw, 100vw"
+        alt="Cocina integral gris con gabinetes hasta el techo y cava vertical para vinos iluminada con LED"
+        class="hero-foto h-full w-full object-cover object-[30%_45%]"
+        pictureAttributes={{ class: 'block h-full w-full' }}
+        loading="eager"
+        fetchpriority="high"
+      />
+      {
+        hayVideo && poster && (
+          <video
+            class="absolute inset-0 h-full w-full object-cover object-[30%_45%]"
+            muted
+            autoplay
+            loop
+            playsinline
+            preload="none"
+            poster={poster.src}
+            data-src="/video/video.mp4"
+            data-hero-video
+            aria-hidden="true"
+          />
+        )
+      }
+
+      <!-- Burbujas que señalan detalles del mueble -->
+      <span class="burbuja hero-pop top-[38%] left-[10%]" style="--d:500ms" aria-hidden="true">Cava con luz LED</span>
+      <span class="burbuja hero-pop top-[16%] left-[48%]" style="--d:620ms" aria-hidden="true">Gabinetes a techo</span>
+      <span class="burbuja hero-pop top-[58%] left-[40%]" style="--d:740ms" aria-hidden="true">Nevera empotrada</span>
+
+      <figure class="foto-marco hero-pop absolute right-3 bottom-3 w-[42%] max-w-[12.5rem] rotate-[4deg] sm:right-5 sm:bottom-5" style="--d:860ms">
+        <Picture
+          src={miniatura}
+          formats={['avif', 'webp']}
+          widths={[240, 400]}
+          sizes="12.5rem"
+          alt="Muro de televisor revestido en paneles de roble con mueble bajo abierto"
+          class="aspect-[4/3] w-full rounded-[0.7rem] object-cover"
+        />
+        <figcaption class="px-1.5 pt-2 pb-1">
+          <span class="block text-[0.8rem] leading-tight font-medium tracking-[-0.01em]">Muro de televisor</span>
+          <span class="mt-0.5 block text-[0.7rem] text-gris">Paneles de roble · Mueble bajo</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-foto {
+      animation: acercar 1.2s var(--ease-suave) both;
+    }
+    .hero-entrada {
+      animation: subir 0.7s var(--ease-suave) both;
+      animation-delay: var(--d);
+    }
+    .hero-pop {
+      animation: aparecer 0.6s var(--ease-suave) both;
+      animation-delay: var(--d);
+    }
+  }
+  @keyframes acercar {
+    from {
+      transform: scale(1.05);
+    }
+  }
+  @keyframes subir {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+  }
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      scale: 0.85;
+    }
+  }
+</style>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  const conexion = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (video && !matchMedia('(prefers-reduced-motion: reduce)').matches && !conexion?.saveData) {
+    const cargar = () => {
+      video.src = video.dataset.src!;
+      video.play().catch(() => {});
+    };
+    if (document.readyState === 'complete') cargar();
+    else window.addEventListener('load', cargar, { once: true });
+  }
+</script>
